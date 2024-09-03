@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Chat Screen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body ng-app="chatApp" ng-controller="chatController">
+    <div style="display: -webkit-inline-box;" >
+        <div class="onlineUserList" > <!-- ng-controller="onlineUserController" -->
+		    <table class="table table-condensed">
+                <tr ng-repeat="x in userList">
+                    <td><button type="button" class="btn btn-primary" data-user-id="{{x.email}}" ng-click="startChatWith(x.email)">{{x.un}}</button></td>
+                </tr>
+            </table>
+        </div>
+        <div > <!-- ng-app="chatController" -->
+            <ul class="pages">
+                <li class="chat page" style="display: list-item;">
+                    <div class="chatArea">
+                        <ul class="messages">
+                            <li class="log" style="display: list-item;">Welcome to Chat</li>
+                        </ul>
+                    </div>
+                    <div style="display: grid">
+                        <input class="inputMessage" placeholder="Type here..." ng-model="usermsg">
+                        <input type="button" class="btn btn-primary" ng-click="sendMsg()" class="btn btn-primary" value="Submit">
+                    </div>
+                </li>
+            </ul>
+                      
+        </div>
+    </div>
+
+</body>
+
+<script>
+    var myApp = angular.module("chatApp", []);
+    var socket = io('http://localhost:3000');
+
+    socket.on('OUC',(data) => {
+        console.log('counter >>',data)
+    })
+
+    socket.on('newmessage',(data) => {
+        console.log("newmess > ",data);
+        angular.element("#messages").append('<li style="display: list-item;">'+data.message+'</li>')
+    })
+    myApp.controller('chatController', function($scope,$http) {
+        $scope.userList =  [ { un: 'hk', email: 'hk@gmail.com' },{ un: 'hk1', email: 'hk1@gmail.com' } ];
+        $scope.toun = '';
+        $scope.toemail = '';
+        $scope.startChatWith = function(tuid) {
+            // console.log(tuid)
+            var toUserData = $scope.userList.filter(obj => {return obj.email == tuid});
+            // console.log('>>',toUserData)
+            var startChatData = {
+                tid:toUserData[0].email,
+                tun:toUserData[0].un
+            }
+            socket.emit('startChat',startChatData);
+            $scope.toun = toUserData[0].un;
+            $scope.toemail = toUserData[0].email;
+        }
+
+        $scope.sendMsg = function(){
+            var msg = $scope.usermsg;
+            console.log("msg > ",msg);
+            var chatData = {
+                tid:$scope.toemail,
+                tun:$scope.toun,
+                msg: $scope.usermsg
+            }
+            socket.emit('sendmsg',chatData);
+            $scope.usermsg = "";
+        }
+    })
+    
+</script>
+
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>User Registraion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div ng-app="register" class="container" style="width:550px">
+        <div style="text-align:center;color:blue">
+            <h3>
+                <b>User Registraion Form</b>
+            </h3>
+        </div>
+        <div ng-controller="RegisterController">
+            <!-- <div align="right">
+                <a href="#" ng-click="searchUser()">{{title}}</a>
+            </div> -->
+            <form name="regiseterForm" class="well" > <!-- ng-hide="ifSearchUser" -->
+                <span class="error" id="userExistMsg" style="color: red" ng-if="userExist">User Already Registered.</span>
+                <div class="form-group">
+                    <label for="name"> Name: </label>
+                    <input type="text" id="name" name="username" class="form-control" placeholder="Enter Name " ng-model="userData.name" required/>
+                    <span class="error" style="color:red" ng-show="regiseterForm.username.$dirty && regiseterForm.username.$error.required">Required!</span>
+                </div>
+                <div class="form-group">
+                    <label for="email"> Email: </label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter Email " ng-model="userData.email" required/>
+                    <span class="error" style="color:red" ng-show="regiseterForm.email.$dirty && regiseterForm.email.$error.required">Required!</span>
+                    <span class="error" style="color:red" ng-show="regiseterForm.email.$error.email">Not valid email!</span>
+                </div>
+                <div class="form-group">
+                    <label for="password"> Password: </label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password " ng-model="userData.password" ng-pattern="/(?=.*[A-Z])(?=.*[@#$%&])(?=.*[^a-zA-Z]).{1,}/" required/>
+                    <span class="error" style="color:red" ng-show="regiseterForm.password.$dirty && regiseterForm.password.$error.required">Required!</span>
+                    <span class="error" style="color:red" ng-show="regiseterForm.password.$error.pattern">At least 8 characters, Must have one uppercase character,Must have one special character ex.: $, @, #</span>
+                </div>
+                <div class="form-group">
+                    <label for="cnfpassword"> Confirm Password: </label>
+                    <input type="password"   id="cnfpassword" name="cnfpassword" class="form-control" placeholder="Enter Confirm Password " ng-model="userData.cnfpassword"  validate-identical="userData.password" required/>
+                    <span class="error" style="color:red" ng-show="regiseterForm.cnfpassword.$dirty && userData.password != userData.cnfpassword">Your passwords must match.</span>
+                </div>
+                <br>
+                <input type="button" class="btn btn-primary" ng-disabled="regiseterForm.$invalid || userData.password != userData.cnfpassword" ng-click="registerUser()" class="btn btn-primary" value="Submit">
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    var myApp = angular.module("register", []);
+    myApp.controller('RegisterController', function($scope,$http,$location) {
+        $scope.userExist = false;
+        $scope.userData = {
+            name:'hk',
+            email:'hk@gmail.com',
+            password:"HK@artoon",
+            cnfpassword:"HK@artoon"
+        };
+        $scope.registerUser = function () {
+            console.log($scope.userData);
+            $http({
+                url: '/createUser',
+                method: "POST",
+                data: { 'userData' : $scope.userData}
+            })
+            .then(function(response) {
+                console.log('done',response)
+                if(response.data.success) {
+                    alert('Registration successful');
+                    $location.path('login');
+                }
+                else {
+                    $scope.userExist = true;
+                    angular.element("#userExistMsg").focus();
+                    // angular.element("#"+$scope.currentID+'-chips').text(response.data.newChips);
+                }
+            
+            })
+            .catch(function(err){
+                console.log('err',err)
+            });
+        };
+    })
+
+</script>
+
+</html>

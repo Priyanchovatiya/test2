@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>User Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <!-- <script src="login.js"></script> -->
+</head>
+
+<body>
+    <div ng-app="myLogin" class="container" style="width:550px">
+        <div style="text-align:center;color:blue">
+            <h3>
+                <b>User Login Form</b>
+            </h3>
+        </div>
+        <div ng-controller="LoginController">
+            <!-- <div align="right">
+                <a href="#" ng-click="searchUser()">{{title}}</a>
+            </div> -->
+            <form name="loginform" class="well" > <!-- ng-hide="ifSearchUser" -->
+                <span class="error" id="errMsg" style="color: red" ng-if="errMsgExist"></span>
+                <div class="form-group">
+                    <label for="email"> Email: </label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter Email " ng-model="loginData.email" required>
+                    <!-- <span data-ng-show="loginform.email.$dirty" >Email is required</span> -->
+                    <span class="error" style="color:red" ng-show="loginform.email.$dirty && loginform.email.$error.required">Required!</span>
+                    <span class="error" style="color:red" ng-show="loginform.email.$error.email">Not valid email!</span>
+                </div>
+                <div class="form-group">
+                    <label for="password"> Password: </label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password " ng-model="loginData.password" required>
+                    <span class="error" style="color:red" ng-show="loginform.password.$dirty && loginform.password.$error.required">Required!</span>
+                </div>
+                <br>
+                <input type="button" class="btn btn-primary" ng-disabled="loginform.$invalid" ng-click="checkUser()" class="btn btn-primary" value="Submit">
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    var myApp = angular.module("myLogin", []);
+    // var socket = io('http://localhost:3000');
+
+    // socket.on('OUC',(data) => {
+    //     console.log('counter >>',data)
+    // })
+    myApp.controller('LoginController', function($scope,$http) {
+        $scope.errMsgExist = false;
+        $scope.checkUser = function () {
+            console.log($scope.loginData);
+            var loginData = $scope.loginData;
+            if (!loginData) {
+                alert('Please insert details')
+                return;
+            }
+            var email = loginData.hasOwnProperty('email') && loginData.email ? loginData.email : "";
+            console.log(email)
+            if (!email) {
+                alert('Please insert email')
+                return;
+            }
+            if (!loginData.password) {
+                alert('Please insert password')
+                return;
+            }
+
+            $http({
+                url: '/login',
+                method: "POST",
+                data: { 'loginData' : $scope.loginData}
+            })
+            .then(function(response) {
+                console.log('done',response)
+                $scope.errMsgExist = true;
+                angular.element("#errMsg").text(response.data.loginErrMsg);
+                // angular.element("#"+$scope.currentID+'-chips').text(response.data.newChips);
+            
+            })
+            .catch(function(err){
+                console.log('err',err)
+            });
+        };
+    })
+
+</script>
+
+</html>

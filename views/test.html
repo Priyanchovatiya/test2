@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<title>User Setting</title>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl">
+<div style="margin-top: 10%">
+	  <span class="label label-default .label-lg"  style="margin-left: 40%;font-size: 20px;">Enter Name:</span>
+	  <input type="text" ng-model="uname" style="margin-left: 30px;" id="usr" required="true">
+	  <button type="button" style="margin-left: 30px;" ng-click="getUserList()" class="btn btn-primary">Submit</button>
+	  <div class="container">
+		    <table class="table table-condensed">
+		    <thead>
+		      <tr>
+		        <th>Index</th>
+		        <th>User Name</th>
+		        <th>Chips</th>
+		        <th>Coin</th>
+		      </tr>
+		    </thead>
+		    <tbody>
+			  <tr ng-repeat="x in names">
+			    <td>{{ x._id }}</td>
+			    <td>{{ x.un }}</td>
+			    <td id="{{ x._id + '-chips' }}">{{ x.chips }}</td>
+			    <td id="{{ x._id + '-coin'}}">{{ x.coin }}</td>
+			    <td><button type="button" class="btn btn-primary" data-user-id="{{x._id }}" ng-click="setID(x._id)" data-toggle="modal" data-target="#myModal">Change Chips</button></td>
+			    <td><button type="button" class="btn btn-primary" data-user-id="{{x._id }}" ng-click="setID(x._id)" data-toggle="modal" data-target="#myModal1">Change Coin</button></td>
+			    <td><button type="button" ng-click="setDB(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.setDBdisabled">Set Daily Bonus</button></td>
+			    <td><button type="button" ng-click="setWW(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.setWWdisabled">Set Weekly Winner</button></td>
+			    <td><button type="button" ng-click="setUserWW(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.setUserWWdisabled">Set User Weekly Winner</button></td>
+			    <td><button type="button" ng-click="setOFR(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.setOFRdisabled">Set offer</button></td>
+			    <td><button type="button" ng-click="setLEVEL(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.setLELVELdisabled">Set Private Table LEVEL</button></td>
+			    <td><button type="button" ng-click="deleteUser(x)" class="btn btn-primary" value="{{ x._id }}" ng-disabled="x.deleteUSERdisabled">Delete</button></td>
+
+			  </tr>
+			</tbody>  
+		  </table>
+	  </div>
+	</div>
+
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Change Chips</h4>
+      </div>
+      <div class="modal-body">
+      	   
+       	  <span class="label label-default">Enter Chips:</span>
+	  	  <input type="number" ng-model="newChips" required="true"><br/>
+	
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default"  data-dismiss="modal">Close</button>
+        <button type="button" ng-click="changeChips($event)" name="_isd" id="" value="" class="btn btn-primary">Submit</button>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div id="myModal1" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Change Coin</h4>
+      </div>
+      <div class="modal-body">
+      
+	  	  <span class="label label-default">Enter Coin:</span>
+	  	  <input type="number" ng-model="newCoin" required="true">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default"  data-dismiss="modal">Close</button>
+        <button type="button" ng-click="changeCoin($event)" name="_isd" id="" value="" class="btn btn-primary">Submit</button>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope,$http) {
+    $scope.names= [];
+
+    $scope.getUserList = function() {
+    	$http.get("/getUserList?uname="+$scope.uname).then(function(response){
+    		$scope.names = response.data.userData;
+    	});
+    };
+
+    $scope.setID = function(id) {
+    	$scope.currentID = id;
+    };
+  
+    $scope.changeChips = function(event) {
+    	
+    	$http({
+	        url: '/changeChips',
+	        method: "POST",
+	        data: { 'chips' : $scope.newChips ,id:	$scope.currentID}
+	    })
+	    .then(function(response) {
+	        angular.element("#myModal").modal("hide");
+	        angular.element("#"+$scope.currentID+'-chips').text(response.data.newChips);
+	      
+	    });
+    };
+
+    $scope.changeCoin = function(event) {
+    	
+    	$http({
+	        url: '/changeCoin',
+	        method: "POST",
+	        data: {'coin':$scope.newCoin ,id:$scope.currentID }
+	    })
+	    .then(function(response) {
+	        angular.element("#myModal1").modal("hide");
+	        angular.element("#"+$scope.currentID+'-coin').text(response.data.newCoin);
+	    });
+    };
+  
+    $scope.deleteUser = function(x) {
+    	
+    	$http({
+	        url: '/deleteUser',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	        x.deleteUSERdisabled = true;
+	    });
+    };
+
+    $scope.setDB = function(x) {
+    	console.log("setDB")
+    	$http({
+	        url: '/setDB',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	    	x.setDBdisabled = true;
+	    	//$scope.setdbflag = false;
+	        //angular.element("#"+event.target.id).text(response.data.newChips)
+	    });
+    };
+
+    $scope.setWW = function(x) {
+    	console.log("setWW")
+    	$http({
+	        url: '/setWW',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	    	x.setWWdisabled = true;
+
+	    	//$scope.setdbflag = false;
+	        //angular.element("#"+event.target.id).text(response.data.newChips)
+	    });
+    };
+
+    $scope.setUserWW = function(x) {
+    	console.log("setUserWW")
+    	$http({
+	        url: '/setUserWeeklyWinner',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	    	x.setUserWWdisabled = true;
+	    });
+    };
+
+
+    $scope.setOFR = function(x) {
+    	console.log("setOFR")
+    	$http({
+	        url: '/setOFR',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	    	x.setOFRdisabled = true;
+
+	    	//$scope.setdbflag = false;
+	        //angular.element("#"+event.target.id).text(response.data.newChips)
+	    });
+    };
+
+
+    $scope.setLEVEL = function(x) {
+    	console.log("setLEVEL")
+    	$http({
+	        url: '/setLEVEL',
+	        method: "POST",
+	        data: { id:x._id}
+	    })
+	    .then(function(response) {
+	    	x.setLELVELdisabled = true;
+
+	    	//$scope.setdbflag = false;
+	        //angular.element("#"+event.target.id).text(response.data.newChips)
+	    });
+    };
+
+});
+$(function(){
+	$('#myModal').on('show.bs.modal', function(e) {
+
+	    //get data-id attribute of the clicked element
+	    var userId = $(e.relatedTarget).data('user-id');
+	    //populate the textbox
+	    $(e.currentTarget).find('button[name="_isd"]').attr("id",userId);
+	});
+})
+</script>
+
+</body>
+</html>
+
